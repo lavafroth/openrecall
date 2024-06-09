@@ -10,16 +10,15 @@ with io.open("README.md", "r", encoding="utf-8") as f:
 install_requires = [
     "Flask==3.0.3",
     "numpy==1.26.4",
-    "mss==9.0.1",
     "pillow==10.3.0",
-    "sentence-transformers==3.0.0",
     "torch==2.3.0",
     "torchvision==0.18.0",
     "shapely",
     "h5py",
     "rapidfuzz",
+    "pyscreenshot",
+    "chromadb==0.5.0"
     "python-doctr @ git+https://github.com/koenvaneijk/doctr.git@af711bc04eb8876a7189923fb51ec44481ee18cd",
-    "pyscreenshot"
 ]
 
 # Define OS-specific dependencies

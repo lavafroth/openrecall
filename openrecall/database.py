@@ -1,46 +1,31 @@
-import sqlite3
-from collections import namedtuple
-from typing import Any, List
+from typing import List
 
 from openrecall.config import db_path
+import chromadb
 
-Entry = namedtuple("Entry", ["id", "app", "title", "text", "timestamp", "embedding"])
-
-
-def create_db() -> None:
-    with sqlite3.connect(db_path) as conn:
-        c = conn.cursor()
-        c.execute(
-            """CREATE TABLE IF NOT EXISTS entries
-               (id INTEGER PRIMARY KEY AUTOINCREMENT, app TEXT, title TEXT, text TEXT, timestamp INTEGER, embedding BLOB)"""
-        )
-        conn.commit()
-
-
-def get_all_entries() -> List[Entry]:
-    with sqlite3.connect(db_path) as conn:
-        c = conn.cursor()
-        results = c.execute("SELECT * FROM entries").fetchall()
-        return [Entry(*result) for result in results]
-
+client = chromadb.PersistentClient(path=db_path)
+collection = client.get_or_create_collection(name="recollection")
 
 def get_timestamps() -> List[int]:
-    with sqlite3.connect(db_path) as conn:
-        c = conn.cursor()
-        results = c.execute(
-            "SELECT timestamp FROM entries ORDER BY timestamp DESC LIMIT 1000"
-        ).fetchall()
-        return [result[0] for result in results]
+    count = collection.count()
+    batch_size = 16
+    timestamps = []
+    for i in range(0, count, batch_size):
+        batch = collection.get(
+            include=[],
+            limit=batch_size,
+            offset = i,
+        )
 
+        for ids in batch['ids']:
+            timestamps.append(int(ids))
+    return timestamps
 
 def insert_entry(
-    text: str, timestamp: int, embedding: Any, app: str, title: str
+    text: str, timestamp: int, app: str, title: str
 ) -> None:
-    embedding_bytes = embedding.tobytes()
-    with sqlite3.connect(db_path) as conn:
-        c = conn.cursor()
-        c.execute(
-            "INSERT INTO entries (text, timestamp, embedding, app, title) VALUES (?, ?, ?, ?, ?)",
-            (text, timestamp, embedding_bytes, app, title),
-        )
-        conn.commit()
+    collection.add(
+        documents=text,
+        ids=[str(timestamp)],
+        metadatas={'app': app, 'title': title}
+    )

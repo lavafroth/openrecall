@@ -6,9 +6,8 @@ import pyscreenshot
 import numpy as np
 from PIL import Image
 
-from openrecall.config import db_path, screenshots_path
+from openrecall.config import screenshots_path
 from openrecall.database import insert_entry
-from openrecall.nlp import get_embedding
 from openrecall.ocr import extract_text_from_image
 from openrecall.utils import get_active_app_name, get_active_window_title
 
@@ -64,11 +63,10 @@ def record_screenshots_thread():
                     lossless=True,
                 )
                 text = extract_text_from_image(nova)
-                embedding = get_embedding(text)
                 active_app_name = get_active_app_name()
                 active_window_title = get_active_window_title()
                 insert_entry(
-                    text, timestamp, embedding, active_app_name, active_window_title
+                    text, timestamp, active_app_name, active_window_title
                 )
         last_screenshots = screenshots
         time.sleep(3)

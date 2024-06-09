@@ -20,7 +20,7 @@ def get_appdata_folder(app_name="openrecall"):
     return os.path.join(home, ".local", "share", app_name)
 
 appdata_folder = get_or_create_appdata_folder()
-db_path = os.path.join(appdata_folder, "recall.db")
+db_path = appdata_folder
 screenshots_path = os.path.join(appdata_folder, "screenshots")
 
 if not os.path.exists(screenshots_path):
