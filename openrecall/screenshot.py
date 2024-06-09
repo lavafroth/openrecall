@@ -1,7 +1,8 @@
 import os
 import time
 
-import mss
+# import mss
+import pyscreenshot
 import numpy as np
 from PIL import Image
 
@@ -37,37 +38,37 @@ def is_similar(img1, img2, similarity_threshold=0.9):
     return similarity >= similarity_threshold
 
 
+def grab_single_screen(sct, monitor):
+    screenshot = np.array(sct.grab(monitor))
+    screenshot = screenshot[:, :, [2, 1, 0]]
+    return screenshot
+
 def take_screenshots(monitor=1):
-    screenshots = []
-    with mss.mss() as sct:
-        for monitor in range(len(sct.monitors)):
-            monitor_ = sct.monitors[monitor]
-            screenshot = np.array(sct.grab(monitor_))
-            screenshot = screenshot[:, :, [2, 1, 0]]
-            screenshots.append(screenshot)
-    return screenshots
+    # with mss.mss() as sct:
+        # tuple guarantees immutability
+        # return (grab_single_screen(sct, monitor) for monitor in sct.monitors)
+        return [np.array(pyscreenshot.grab())[..., 0:3]]
 
 
 def record_screenshots_thread():
     last_screenshots = take_screenshots()
     while True:
         screenshots = take_screenshots()
-        for i, screenshot in enumerate(screenshots):
-            last_screenshot = last_screenshots[i]
-            if not is_similar(screenshot, last_screenshot):
-                last_screenshots[i] = screenshot
-                image = Image.fromarray(screenshot)
+        for prev, nova in zip(last_screenshots, screenshots):
+            if not is_similar(prev, nova):
+                image = Image.fromarray(nova)
                 timestamp = int(time.time())
                 image.save(
                     os.path.join(screenshots_path, f"{timestamp}.webp"),
                     format="webp",
                     lossless=True,
                 )
-                text = extract_text_from_image(screenshot)
+                text = extract_text_from_image(nova)
                 embedding = get_embedding(text)
                 active_app_name = get_active_app_name()
                 active_window_title = get_active_window_title()
                 insert_entry(
                     text, timestamp, embedding, active_app_name, active_window_title
                 )
+        last_screenshots = screenshots
         time.sleep(3)

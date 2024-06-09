@@ -1,25 +1,25 @@
 import os
 import sys
 
+def get_or_create_appdata_folder(app_name="openrecall"):
+    path = get_appdata_folder(app_name)
+    if not os.path.exists(path):
+        os.makedirs(path)
+    return path
 
 def get_appdata_folder(app_name="openrecall"):
     if sys.platform == "win32":
         appdata = os.getenv("APPDATA")
         if not appdata:
             raise EnvironmentError("APPDATA environment variable is not set.")
-        path = os.path.join(appdata, app_name)
-    elif sys.platform == "darwin":
-        home = os.path.expanduser("~")
-        path = os.path.join(home, "Library", "Application Support", app_name)
-    else:
-        home = os.path.expanduser("~")
-        path = os.path.join(home, ".local", "share", app_name)
-    if not os.path.exists(path):
-        os.makedirs(path)
-    return path
+        return os.path.join(appdata, app_name)
 
+    home = os.path.expanduser("~")
+    if sys.platform == "darwin":
+        return os.path.join(home, "Library", "Application Support", app_name)
+    return os.path.join(home, ".local", "share", app_name)
 
-appdata_folder = get_appdata_folder()
+appdata_folder = get_or_create_appdata_folder()
 db_path = os.path.join(appdata_folder, "recall.db")
 screenshots_path = os.path.join(appdata_folder, "screenshots")
 

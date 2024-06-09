@@ -75,7 +75,8 @@ def get_active_app_name():
     elif sys.platform == "darwin":
         return get_active_app_name_osx()
     else:
-        raise NotImplementedError("This platform is not supported")
+        return "generic"
+        # raise NotImplementedError("This platform is not supported")
 
 
 def get_active_window_title():
@@ -84,4 +85,5 @@ def get_active_window_title():
     elif sys.platform == "darwin":
         return get_active_window_title_osx()
     else:
-        raise NotImplementedError("This platform is not supported")
+        return "generic"
+        # raise NotImplementedError("This platform is not supported")
